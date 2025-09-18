@@ -2,82 +2,73 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [task, setTask] = useState("");
   const [todos, setTodos] = useState([]);
+  const [text, setText] = useState("");
 
-  // Ambil data dari backend
   useEffect(() => {
-    axios.get("http://localhost:5000/todos").then((res) => setTodos(res.data));
+    fetchTodos();
   }, []);
 
-  const addTodo = () => {
-    if (task.trim() === "") return;
-    axios.post("http://localhost:5000/todos", { text: task }).then((res) => {
-      setTodos([...todos, res.data]);
-      setTask("");
-    });
+  const fetchTodos = async () => {
+    const res = await axios.get("http://localhost:5000/todos");
+    setTodos(res.data);
   };
 
-  const toggleTodo = (id) => {
-    axios.put(`http://localhost:5000/todos/${id}`).then((res) => {
-      setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
-    });
+  const addTodo = async () => {
+    if (!text) return;
+    const res = await axios.post("http://localhost:5000/todos", { text });
+    setTodos([...todos, res.data]);
+    setText("");
   };
 
-  const deleteTodo = (id) => {
-    axios.delete(`http://localhost:5000/todos/${id}`).then(() => {
-      setTodos(todos.filter((todo) => todo._id !== id));
-    });
+  const toggleTodo = async (id) => {
+    const res = await axios.put(`http://localhost:5000/todos/${id}`);
+    setTodos(todos.map((todo) => (todo._id === id ? res.data : todo)));
+  };
+
+  const deleteTodo = async (id) => {
+    await axios.delete(`http://localhost:5000/todos/${id}`);
+    setTodos(todos.filter((todo) => todo._id !== id));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
-      <div className="bg-white shadow-2xl rounded-2xl p-6 w-[400px]">
-        <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
-          ✅ To-Do List (MongoDB)
-        </h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white shadow-lg rounded-lg p-6 w-[400px]">
+        <h1 className="text-2xl font-bold mb-4 text-center">✅ To-Do List</h1>
 
-        {/* Input */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex mb-4">
           <input
             type="text"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="flex-grow border px-2 py-1 rounded-l"
             placeholder="Tambah tugas..."
-            className="flex-1 border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             onClick={addTodo}
-            className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition"
+            className="bg-blue-500 text-white px-4 py-1 rounded-r"
           >
-            +
+            Add
           </button>
         </div>
 
-        {/* List */}
-        <ul className="space-y-3">
-          {todos.length === 0 && (
-            <p className="text-gray-400 text-center">Belum ada tugas 🙌</p>
-          )}
-
+        <ul>
           {todos.map((todo) => (
             <li
               key={todo._id}
-              className="flex justify-between items-center bg-gray-50 p-3 rounded-xl shadow-sm hover:bg-gray-100 transition"
+              className="flex justify-between items-center border-b py-2"
             >
               <span
                 onClick={() => toggleTodo(todo._id)}
-                className={`cursor-pointer select-none ${
-                  todo.completed
-                    ? "line-through text-gray-400"
-                    : "text-gray-800"
+                className={`cursor-pointer ${
+                  todo.completed ? "line-through text-gray-400" : ""
                 }`}
               >
                 {todo.text}
               </span>
               <button
                 onClick={() => deleteTodo(todo._id)}
-                className="text-red-500 hover:text-red-700 transition"
+                className="text-red-500 hover:text-red-700"
               >
                 ❌
               </button>

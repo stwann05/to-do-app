@@ -11,16 +11,13 @@ app.use(express.json());
 
 // Koneksi MongoDB
 mongoose
-  .connect("mongodb://127.0.0.1:27017/todolist", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect("mongodb://127.0.0.1:27017/todolist")
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
 // Model Todo
 const todoSchema = new mongoose.Schema({
-  text: String,
+  text: { type: String, required: true },
   completed: { type: Boolean, default: false },
 });
 
@@ -28,27 +25,44 @@ const Todo = mongoose.model("Todo", todoSchema);
 
 // Routes
 app.get("/todos", async (req, res) => {
-  const todos = await Todo.find();
-  res.json(todos);
+  try {
+    const todos = await Todo.find();
+    res.json(todos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/todos", async (req, res) => {
-  const newTodo = new Todo({ text: req.body.text });
-  await newTodo.save();
-  res.json(newTodo);
+  try {
+    const newTodo = new Todo({ text: req.body.text });
+    await newTodo.save();
+    res.json(newTodo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.put("/todos/:id", async (req, res) => {
-  const todo = await Todo.findById(req.params.id);
-  if (!todo) return res.status(404).send("Not Found");
-  todo.completed = !todo.completed;
-  await todo.save();
-  res.json(todo);
+  try {
+    const todo = await Todo.findById(req.params.id);
+    if (!todo) return res.status(404).json({ message: "Not Found" });
+
+    todo.completed = !todo.completed;
+    await todo.save();
+    res.json(todo);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.delete("/todos/:id", async (req, res) => {
-  await Todo.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+  try {
+    await Todo.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () =>
