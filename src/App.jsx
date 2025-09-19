@@ -15,7 +15,7 @@ function App() {
   };
 
   const addTodo = async () => {
-    if (!text) return;
+    if (!text.trim()) return;
     const res = await axios.post("http://localhost:5000/todos", { text });
     setTodos([...todos, res.data]);
     setText("");
@@ -32,43 +32,59 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-[400px]">
-        <h1 className="text-2xl font-bold mb-4 text-center">✅ To-Do List</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center px-4">
+      <div className="bg-white/90 backdrop-blur-md shadow-2xl rounded-2xl p-8 w-full max-w-md border border-gray-200">
+        <h1 className="text-4xl font-extrabold mb-8 text-center text-indigo-600 drop-shadow-sm">
+          ✅ To-Do List
+        </h1>
 
-        <div className="flex mb-4">
+        {/* Input Section */}
+        <div className="flex mb-6">
           <input
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="flex-grow border px-2 py-1 rounded-l"
+            className="flex-grow border border-gray-300 px-4 py-3 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700"
             placeholder="Tambah tugas..."
           />
           <button
             onClick={addTodo}
-            className="bg-blue-500 text-white px-4 py-1 rounded-r"
+            className="bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white px-6 py-3 rounded-r-xl transition duration-200 shadow-md"
           >
             Add
           </button>
         </div>
 
-        <ul>
+        {/* List Section */}
+        <ul className="space-y-3">
           {todos.map((todo) => (
             <li
               key={todo._id}
-              className="flex justify-between items-center border-b py-2"
+              className="flex justify-between items-center bg-white hover:bg-indigo-50 transition-all px-4 py-3 rounded-xl shadow-sm border border-gray-200"
             >
-              <span
+              <div
+                className="flex items-center gap-3 cursor-pointer select-none"
                 onClick={() => toggleTodo(todo._id)}
-                className={`cursor-pointer ${
-                  todo.completed ? "line-through text-gray-400" : ""
-                }`}
               >
-                {todo.text}
-              </span>
+                <input
+                  type="checkbox"
+                  checked={todo.completed}
+                  readOnly
+                  className="w-5 h-5 accent-indigo-500 cursor-pointer"
+                />
+                <span
+                  className={`text-lg transition ${
+                    todo.completed
+                      ? "line-through text-gray-400"
+                      : "text-gray-700 font-medium"
+                  }`}
+                >
+                  {todo.text}
+                </span>
+              </div>
               <button
                 onClick={() => deleteTodo(todo._id)}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 transition text-lg"
               >
                 ❌
               </button>
